@@ -76,11 +76,10 @@ function Set-NightLightEnabled {
 }
 
 function Set-DarkModeChrome {
-    Write-Output "[DEBUG] Changing google chrome to dark mode:"
-    ### Handle the closing chrome process
+    Write-Output "Changing google chrome to dark mode:"
     $chrome_process = Get-Process chrome -ErrorAction SilentlyContinue
     if ($chrome_process) {
-        $confirmation = Read-Host "We are Chrome need to be closed to procced. Should we close it? [Y\n]"
+        $confirmation = Read-Host "Chrome need to be closed to procced. Should we close it? [Y\n]"
         if ($confirmation -eq 'y' -Or $confirmation -eq 'Y' -Or !$confirmation) {
             Write-Output "Closing chrome application..."
             $chrome_process.CloseMainWindow()
@@ -90,11 +89,6 @@ function Set-DarkModeChrome {
             }
         }
     }
-
-    ### TODO: Now we can handle the dark mode change
-
-    # $a = Get-Content "C:\Users\$env:UserName\AppData\Local\Google\Chrome\User Data\LocalState" -raw | ConvertFrom-Json
-    # $a | ConvertTo-Json -depth 32| set-content 'data_file-output.json'
 }
 
 $currentTime = (Get-Date -Day 1 -Month 1 -Year 1970)
