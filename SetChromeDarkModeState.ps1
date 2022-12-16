@@ -10,13 +10,12 @@ $ENABLE_FORCE_DARK_COMMAND = "enable-force-dark@1"
 function Close-Chrome {
     $chrome_process = Get-Process chrome -ErrorAction SilentlyContinue
     if ($chrome_process) {
-        $confirmation = Read-Host "Chrome need to be closed to procced. Should we close it? [Y\n]"
+        $confirmation = Read-Host "Google Chrome need to be closed to procced. Should we close it? [Y\n]"
         if ($confirmation -eq 'y' -Or $confirmation -eq 'Y' -Or !$confirmation) {
-            Write-Output "Closing chrome application..."
+            Write-Output "Closing Google Chrome application..."
             $chrome_process.CloseMainWindow()
-            Sleep 3
-            if (!$chrome_process.HasExited) {
-            $chrome_process | Stop-Process -Force
+            while (!$chrome_process.HasExited) {
+                Sleep 1
             }
         }
     }
@@ -26,10 +25,12 @@ function Set-ChromeDarkMode {
     $chromeLocalStateJson = Get-Content $CHROME_LOCAL_STATE_FILE_PATH -raw | ConvertFrom-Json
     $enabledLabsExperimentsArrayList = [System.Collections.ArrayList] $chromeLocalStateJson.browser.enabled_labs_experiments
     if ($EnableDarkMode) {
+        Write-Output "Enabling Google Chrome dark mode:"
         if ($enabledLabsExperimentsArrayList -notcontains $ENABLE_FORCE_DARK_COMMAND) {
             $enabledLabsExperimentsArrayList.Add($ENABLE_FORCE_DARK_COMMAND)
         }
     } else {
+        Write-Output "Disabling Google Chrome dark mode:"
         if ($enabledLabsExperimentsArrayList -contains $ENABLE_FORCE_DARK_COMMAND) {
             $enabledLabsExperimentsArrayList.Remove($ENABLE_FORCE_DARK_COMMAND)
         }
@@ -38,6 +39,5 @@ function Set-ChromeDarkMode {
     $chromeLocalStateJson | ConvertTo-Json -depth 32 | Set-Content $CHROME_LOCAL_STATE_FILE_PATH
 }
 
-Write-Output "Changing google chrome to dark mode:"
 Close-Chrome
 Set-ChromeDarkMode
