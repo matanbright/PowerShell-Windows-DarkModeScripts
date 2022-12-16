@@ -75,22 +75,6 @@ function Set-NightLightEnabled {
     Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.bluelightreduction.bluelightreductionstate\windows.data.bluelightreduction.bluelightreductionstate' -Name 'Data' -Value ([byte[]]$newData) -Type Binary
 }
 
-function Set-DarkModeChrome {
-    Write-Output "Changing google chrome to dark mode:"
-    $chrome_process = Get-Process chrome -ErrorAction SilentlyContinue
-    if ($chrome_process) {
-        $confirmation = Read-Host "Chrome need to be closed to procced. Should we close it? [Y\n]"
-        if ($confirmation -eq 'y' -Or $confirmation -eq 'Y' -Or !$confirmation) {
-            Write-Output "Closing chrome application..."
-            $chrome_process.CloseMainWindow()
-            Sleep 3
-            if (!$chrome_process.HasExited) {
-            $chrome_process | Stop-Process -Force
-            }
-        }
-    }
-}
-
 $currentTime = (Get-Date -Day 1 -Month 1 -Year 1970)
 if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
     $newDarkModeStartTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second)
