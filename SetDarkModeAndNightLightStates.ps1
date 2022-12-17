@@ -75,7 +75,6 @@ function Set-NightLightEnabled {
     Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.bluelightreduction.bluelightreductionstate\windows.data.bluelightreduction.bluelightreductionstate' -Name 'Data' -Value ([byte[]]$newData) -Type Binary
 }
 
-
 $currentTime = (Get-Date -Day 1 -Month 1 -Year 1970)
 if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
     $newDarkModeStartTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second)
