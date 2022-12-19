@@ -1,13 +1,13 @@
 [CmdletBinding()]
 param (
-    [DateTime] $DarkModeStartTime,
-    [DateTime] $DarkModeEndTime,
-    [DateTime] $NightLightStartTime,
-    [DateTime] $NightLightEndTime
+    [DateTime] $darkModeStartTime,
+    [DateTime] $darkModeEndTime,
+    [DateTime] $nightLightStartTime,
+    [DateTime] $nightLightEndTime
 )
 
 
-$User32 = Add-Type -MemberDefinition "
+$USER32 = Add-Type -MemberDefinition "
         [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)]
         public static extern bool SystemParametersInfoW(uint uiAction,
                                                         uint uiParam,
@@ -18,7 +18,7 @@ $User32 = Add-Type -MemberDefinition "
                                                      uint Msg,
                                                      UIntPtr wParam,
                                                      String lParam);
-    " -Name "User32" -PassThru
+    " -Name "USER32" -PassThru
 $USER32_SPI_SETDESKWALLPAPER = 0x14
 $USER32_SPIF_UPDATEINIFILE = 0x1
 $USER32_HWND_BROADCAST = [IntPtr]0xFFFF
@@ -28,9 +28,9 @@ $DARK_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img19.jpg"
 
 function Set-DarkModeEnabled {
     param (
-        [Parameter(Mandatory=$true)] [bool] $Enabled
+        [Parameter(Mandatory=$true)] [bool] $enabled
     )
-    if ($Enabled) {
+    if ($enabled) {
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
     } else {
@@ -38,32 +38,32 @@ function Set-DarkModeEnabled {
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 1
     }
     Start-Sleep -Milliseconds 250
-    $User32::SendNotifyMessageW($USER32_HWND_BROADCAST, $USER32_WM_SETTINGCHANGE, [UIntPtr][uint32]0, "ImmersiveColorSet")
+    $USER32::SendNotifyMessageW($USER32_HWND_BROADCAST, $USER32_WM_SETTINGCHANGE, [UIntPtr][uint32]0, "ImmersiveColorSet")
 }
 
 function Set-WallPaper {
     param (
-        [Parameter(Mandatory=$true)] [string] $ImagePath
+        [Parameter(Mandatory=$true)] [string] $imagePath
     )
-    $User32::SystemParametersInfoW($USER32_SPI_SETDESKWALLPAPER, 0, $ImagePath, $USER32_SPIF_UPDATEINIFILE)
+    $USER32::SystemParametersInfoW($USER32_SPI_SETDESKWALLPAPER, 0, $imagePath, $USER32_SPIF_UPDATEINIFILE)
 }
 
 function Set-NightLightEnabled {
     param (
-        [Parameter(Mandatory=$true)] [bool] $Enabled
+        [Parameter(Mandatory=$true)] [bool] $enabled
     )
     $currentData = (Get-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.bluelightreduction.bluelightreductionstate\windows.data.bluelightreduction.bluelightreductionstate' -Name 'Data').Data
     $newData = @()
     for ($i = 0; $i -lt 23; $i++) {
         $newData += $currentData[$i]
     }
-    if (($currentData.Length -eq 41) -and ($currentData[18] -eq 0x13) -and $Enabled) {
+    if (($currentData.Length -eq 41) -and ($currentData[18] -eq 0x13) -and $enabled) {
         $newData[18] = 0x15
         $newData += (0x10, 0x00)
         for ($i = 23; $i -lt $currentData.Length; $i++) {
             $newData += $currentData[$i]
         }
-    } elseif (($currentData.Length -eq 43) -and ($currentData[18] -eq 0x15) -and (-not $Enabled)) {
+    } elseif (($currentData.Length -eq 43) -and ($currentData[18] -eq 0x15) -and (-not $enabled)) {
         $newData[18] = 0x13
         for ($i = 25; $i -lt $currentData.Length; $i++) {
             $newData += $currentData[$i]
@@ -86,11 +86,11 @@ function Set-NightLightEnabled {
 
 
 $currentTime = (Get-Date -Day 1 -Month 1 -Year 1970)
-if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
-    $newDarkModeStartTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second)
-    $newDarkModeEndTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeEndTime.Hour -Minute $DarkModeEndTime.Minute -Second $DarkModeEndTime.Second)
+if (($darkModeStartTime -ne $null) -and ($darkModeEndTime -ne $null)) {
+    $newDarkModeStartTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $darkModeStartTime.Hour -Minute $darkModeStartTime.Minute -Second $darkModeStartTime.Second)
+    $newDarkModeEndTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $darkModeEndTime.Hour -Minute $darkModeEndTime.Minute -Second $darkModeEndTime.Second)
     $shouldEnableDarkMode = $false
-    if ($DarkModeStartTime -le $DarkModeEndTime) {
+    if ($darkModeStartTime -le $darkModeEndTime) {
         $shouldEnableDarkMode = (($currentTime -ge $newDarkModeStartTime) -and ($currentTime -lt $newDarkModeEndTime))
     } else {
         $shouldEnableDarkMode = (($currentTime -ge $newDarkModeStartTime) -or ($currentTime -lt $newDarkModeEndTime))
@@ -98,11 +98,11 @@ if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
     Set-DarkModeEnabled $shouldEnableDarkMode
     Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$shouldEnableDarkMode]
 }
-if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
-    $newNightLightStartTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightStartTime.Hour -Minute $NightLightStartTime.Minute -Second $NightLightStartTime.Second)
-    $newNightLightEndTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightEndTime.Hour -Minute $NightLightEndTime.Minute -Second $NightLightEndTime.Second)
+if (($nightLightStartTime -ne $null) -and ($nightLightEndTime -ne $null)) {
+    $newNightLightStartTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $nightLightStartTime.Hour -Minute $nightLightStartTime.Minute -Second $nightLightStartTime.Second)
+    $newNightLightEndTime = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $nightLightEndTime.Hour -Minute $nightLightEndTime.Minute -Second $nightLightEndTime.Second)
     $shouldEnableNightLight = $false
-    if ($NightLightStartTime -le $NightLightEndTime) {
+    if ($nightLightStartTime -le $nightLightEndTime) {
         $shouldEnableNightLight = (($currentTime -ge $newNightLightStartTime) -and ($currentTime -lt $newNightLightEndTime))
     } else {
         $shouldEnableNightLight = (($currentTime -ge $newNightLightStartTime) -or ($currentTime -lt $newNightLightEndTime))
