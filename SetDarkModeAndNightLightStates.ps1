@@ -9,13 +9,20 @@ param (
 
 $User32 = Add-Type -MemberDefinition "
         [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)]
-        public static extern int SystemParametersInfo(uint uiAction,
-                                                      uint uiParam,
-                                                      String pvParam,
-                                                      uint fWinIni);
+        public static extern bool SystemParametersInfoW(uint uiAction,
+                                                        uint uiParam,
+                                                        String pvParam,
+                                                        uint fWinIni);
+        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)]
+        public static extern bool SendNotifyMessageW(IntPtr hWnd,
+                                                     uint Msg,
+                                                     UIntPtr wParam,
+                                                     String lParam);
     " -Name "User32" -PassThru
 $USER32_SPI_SETDESKWALLPAPER = 0x14
 $USER32_SPIF_UPDATEINIFILE = 0x1
+$USER32_HWND_BROADCAST = [IntPtr]0xFFFF
+$USER32_WM_SETTINGCHANGE = 0x1A
 $LIGHT_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img0.jpg"
 $DARK_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img19.jpg"
 
@@ -30,13 +37,15 @@ function Set-DarkModeEnabled {
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 1
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 1
     }
+    Start-Sleep -Milliseconds 250
+    $User32::SendNotifyMessageW($USER32_HWND_BROADCAST, $USER32_WM_SETTINGCHANGE, [UIntPtr][uint32]0, "ImmersiveColorSet")
 }
 
 function Set-WallPaper {
     param (
         [Parameter(Mandatory=$true)] [string] $ImagePath
     )
-    $User32::SystemParametersInfo($USER32_SPI_SETDESKWALLPAPER, 0, $ImagePath, $USER32_SPIF_UPDATEINIFILE)
+    $User32::SystemParametersInfoW($USER32_SPI_SETDESKWALLPAPER, 0, $ImagePath, $USER32_SPIF_UPDATEINIFILE)
 }
 
 function Set-NightLightEnabled {
