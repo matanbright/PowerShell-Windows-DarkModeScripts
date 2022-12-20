@@ -8,21 +8,24 @@ param (
 
 
 $USER32 = Add-Type -MemberDefinition "
-        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)]
-        public static extern bool SystemParametersInfoW(uint uiAction,
-                                                        uint uiParam,
-                                                        String pvParam,
-                                                        uint fWinIni);
-        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)]
-        public static extern bool SendNotifyMessageW(IntPtr hWnd,
-                                                     uint Msg,
-                                                     UIntPtr wParam,
-                                                     String lParam);
+        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)] public static extern bool SystemParametersInfoW(uint uiAction, uint uiParam, string pvParam, uint fWinIni);
+        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)] public static extern bool SendNotifyMessageW(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam);
+        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)] public static extern IntPtr FindWindowExW(IntPtr hWndParent, IntPtr hWndChildAfter, IntPtr lpszClass, IntPtr lpszWindow);
+        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [DllImport(`"user32.dll`", CharSet = CharSet.Unicode)] public static extern int GetWindowTextW(IntPtr hWnd, System.Text.StringBuilder lpString, int nMaxCount);
     " -Name "USER32" -PassThru
 $USER32_SPI_SETDESKWALLPAPER = 0x14
 $USER32_SPIF_UPDATEINIFILE = 0x1
 $USER32_HWND_BROADCAST = [IntPtr]0xFFFF
+$USER32_SW_SHOWMINIMIZED = 2
+$USER32_WM_CLOSE = 0x10
 $USER32_WM_SETTINGCHANGE = 0x1A
+$APPS_FOLDER_PATH = "shell:AppsFolder"
+$IMMERSIVE_CONTROL_PANEL_APP_NAME = "windows.immersivecontrolpanel"
+$IMMERSIVE_CONTROL_PANEL_APP_NATIVE_PROCESS_NAME = "SystemSettings"
+$IMMERSIVE_CONTROL_PANEL_APP_TITLES = ("Settings", "הגדרות")
+$APPLICATION_FRAME_HOST_PROCESS_NAME = "ApplicationFrameHost"
 $LIGHT_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img0.jpg"
 $DARK_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img19.jpg"
 
@@ -84,6 +87,68 @@ function Set-NightLightEnabled {
     Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.bluelightreduction.bluelightreductionstate\windows.data.bluelightreduction.bluelightreductionstate' -Name 'Data' -Value ([byte[]]$newData) -Type Binary
 }
 
+function Open-SystemSettingsApp {
+    $apps = Get-StartApps
+    $immersiveControlPanelAppPath = $null
+    foreach ($app in $apps) {
+        if ($app.AppID -match $IMMERSIVE_CONTROL_PANEL_APP_NAME) {
+            $immersiveControlPanelAppPath = $APPS_FOLDER_PATH + "\" + $app.AppID
+            break
+        }
+    }
+    $immersiveControlPanelAppNativeProcess = Get-Process $IMMERSIVE_CONTROL_PANEL_APP_NATIVE_PROCESS_NAME -ErrorAction SilentlyContinue
+    if (!$immersiveControlPanelAppNativeProcess) {
+        Start-Process $immersiveControlPanelAppPath
+        Start-Sleep -Milliseconds 100
+        return $true
+    }
+    return $false
+}
+
+function Get-SystemSettingsAppWindowHandle {
+    $applicationFrameHostProcesses = [System.Diagnostics.Process]::GetProcessesByName($APPLICATION_FRAME_HOST_PROCESS_NAME)
+    if ($applicationFrameHostProcesses) {
+        $applicationFrameHostProcessIdOfCurrentUser = 0
+        $sessionIdOfCurrentUser = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
+        foreach ($applicationFrameHostProcess in $applicationFrameHostProcesses) {
+            if ($applicationFrameHostProcess.SessionId -eq $sessionIdOfCurrentUser) {
+                $applicationFrameHostProcessIdOfCurrentUser = $applicationFrameHostProcess.Id
+                break
+            }
+        }
+        if ($applicationFrameHostProcessIdOfCurrentUser -gt 0) {
+            $currentWindowHandle = [IntPtr]::Zero
+            do {
+                $currentWindowHandle = $USER32::FindWindowExW([IntPtr]::Zero, $currentWindowHandle, [IntPtr]::Zero, [IntPtr]::Zero)
+                $currentWindowProcessId = 0
+                $USER32::GetWindowThreadProcessId($currentWindowHandle, [ref] $currentWindowProcessId) | Out-Null
+                if ($currentWindowProcessId -eq $applicationFrameHostProcessIdOfCurrentUser) {
+                    $currentWindowCaption = [System.Text.StringBuilder]::new(1000)
+                    $USER32::GetWindowTextW($currentWindowHandle, $currentWindowCaption, 1000) | Out-Null
+                    if ($IMMERSIVE_CONTROL_PANEL_APP_TITLES -contains $currentWindowCaption.ToString()) {
+                        return $currentWindowHandle
+                    }
+                }
+            } while ($currentWindowHandle -ne [IntPtr]::Zero)
+        }
+    }
+    return [IntPtr]::Zero
+}
+
+function Hide-SystemSettingsAppWindow {
+    $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
+    if ($systemSettingsAppWindowHandle -ne [IntPtr]::Zero) {
+        $USER32::ShowWindow($systemSettingsAppWindowHandle, $USER32_SW_SHOWMINIMIZED) | Out-Null
+    }
+}
+
+function Close-SystemSettingsAppWindow {
+    $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
+    if ($systemSettingsAppWindowHandle -ne [IntPtr]::Zero) {
+        $USER32::SendNotifyMessageW($systemSettingsAppWindowHandle, $USER32_WM_CLOSE, [UIntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+    }
+}
+
 
 $currentTime = (Get-Date -Day 1 -Month 1 -Year 1970)
 if (($darkModeStartTime -ne $null) -and ($darkModeEndTime -ne $null)) {
@@ -95,7 +160,14 @@ if (($darkModeStartTime -ne $null) -and ($darkModeEndTime -ne $null)) {
     } else {
         $shouldEnableDarkMode = (($currentTime -ge $newDarkModeStartTime) -or ($currentTime -lt $newDarkModeEndTime))
     }
+    $systemSettingsAppWasNotAlreadyOpen = Open-SystemSettingsApp
+    if ($systemSettingsAppWasNotAlreadyOpen) {
+        Hide-SystemSettingsAppWindow
+    }
     Set-DarkModeEnabled $shouldEnableDarkMode
+    if ($systemSettingsAppWasNotAlreadyOpen) {
+        Close-SystemSettingsAppWindow
+    }
     Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$shouldEnableDarkMode]
 }
 if (($nightLightStartTime -ne $null) -and ($nightLightEndTime -ne $null)) {
