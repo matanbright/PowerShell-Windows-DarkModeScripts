@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param (
     [DateTime] $darkModeStartTime,
     [DateTime] $darkModeEndTime,
