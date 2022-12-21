@@ -24,7 +24,7 @@ $USER32_WM_SETTINGCHANGE = 0x1A
 $APPS_FOLDER_PATH = "shell:AppsFolder"
 $IMMERSIVE_CONTROL_PANEL_APP_NAME = "windows.immersivecontrolpanel"
 $IMMERSIVE_CONTROL_PANEL_APP_NATIVE_PROCESS_NAME = "SystemSettings"
-$IMMERSIVE_CONTROL_PANEL_APP_TITLES = ("Settings", "הגדרות")
+$IMMERSIVE_CONTROL_PANEL_APP_TITLES = ("Settings", "הגדרות")    # If your system is in another language, please translate the word "Settings" to that language and add it to the list.
 $APPLICATION_FRAME_HOST_PROCESS_NAME = "ApplicationFrameHost"
 $LIGHT_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img0.jpg"
 $DARK_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img19.jpg"
@@ -96,8 +96,7 @@ function Open-SystemSettingsApp {
             break
         }
     }
-    $immersiveControlPanelAppNativeProcess = Get-Process $IMMERSIVE_CONTROL_PANEL_APP_NATIVE_PROCESS_NAME -ErrorAction SilentlyContinue
-    if (!$immersiveControlPanelAppNativeProcess) {
+    if (!(Get-Process $IMMERSIVE_CONTROL_PANEL_APP_NATIVE_PROCESS_NAME -ErrorAction SilentlyContinue)) {
         Start-Process $immersiveControlPanelAppPath
         Start-Sleep -Milliseconds 100
         return $true
