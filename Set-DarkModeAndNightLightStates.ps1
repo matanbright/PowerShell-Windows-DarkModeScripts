@@ -53,3 +53,4 @@ $shouldEnableDarkMode = Get-IfShouldEnableDarkMode $currentTime
 $shouldEnableNightLight = Get-IfShouldEnableNightLight $currentTime
 # Add scripts below:
 Start-JobHere { scripts\Set-WindowsDarkModeAndNightLightStates.ps1 $args[0] $args[1] } ($shouldEnableDarkMode, $shouldEnableNightLight)
+Start-JobHere { scripts\etc\Set-ChromeForceDarkState.ps1 $args[0] } $shouldEnableDarkMode
