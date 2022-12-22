@@ -44,7 +44,7 @@ function Start-JobHere() {
         [scriptblock] $scriptBlock,
         [object[]] $arguments
     )
-    Start-Job -Init ([scriptblock]::Create("Set-Location `"$pwd`"")) -ScriptBlock $scriptBlock -ArgumentList $arguments
+    return Start-Job -Init ([scriptblock]::Create("Set-Location `"$pwd`"")) -ScriptBlock $scriptBlock -ArgumentList $arguments
 }
 
 
@@ -52,6 +52,8 @@ $currentTime = Get-Date
 $shouldEnableDarkMode = Get-IfShouldEnableDarkMode $currentTime
 $shouldEnableNightLight = Get-IfShouldEnableNightLight $currentTime
 # Add scripts below:
-Start-JobHere { scripts\Set-WindowsDarkModeAndNightLightStates.ps1 $args[0] $args[1] } ($shouldEnableDarkMode, $shouldEnableNightLight)
-Start-JobHere { scripts\etc\Set-ChromeForceDarkState.ps1 $args[0] } $shouldEnableDarkMode
-Start-JobHere { scripts\etc\Set-NotepadPlusPlusDarkModeState.ps1 $args[0] } $shouldEnableDarkMode
+$jobList = @()
+$jobList += Start-JobHere { scripts\Set-WindowsDarkModeAndNightLightStates.ps1 $args[0] $args[1] } ($shouldEnableDarkMode, $shouldEnableNightLight)
+$jobList += Start-JobHere { scripts\etc\Set-ChromeForceDarkState.ps1 $args[0] } $shouldEnableDarkMode
+$jobList += Start-JobHere { scripts\etc\Set-NotepadPlusPlusDarkModeState.ps1 $args[0] } $shouldEnableDarkMode
+Wait-Job $jobList
