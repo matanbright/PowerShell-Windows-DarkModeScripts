@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param (
-    [Nullable[bool]] $darkModeEnabled,
-    [Nullable[bool]] $nightLightEnabled
+    [Nullable[bool]] $enableDarkMode,
+    [Nullable[bool]] $enableNightLight
 )
 
 
@@ -147,17 +147,17 @@ function Close-SystemSettingsAppWindow {
 }
 
 
-if ($darkModeEnabled -ne $null) {
+if ($enableDarkMode -ne $null) {
     $systemSettingsAppWasNotAlreadyOpen = Open-SystemSettingsApp
     if ($systemSettingsAppWasNotAlreadyOpen) {
         Hide-SystemSettingsAppWindow
     }
-    Set-DarkModeState $darkModeEnabled
+    Set-DarkModeState $enableDarkMode
     if ($systemSettingsAppWasNotAlreadyOpen) {
         Close-SystemSettingsAppWindow
     }
-    Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$darkModeEnabled]
+    Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$enableDarkMode]
 }
-if ($nightLightEnabled -ne $null) {
-    Set-NightLightState $nightLightEnabled
+if ($enableNightLight -ne $null) {
+    Set-NightLightState $enableNightLight
 }
