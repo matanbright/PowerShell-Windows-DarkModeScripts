@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param (
-    [Nullable[bool]] $enableDarkMode
+    [System.Nullable[bool]] $enableDarkMode
 )
 
 
@@ -14,7 +14,7 @@ $STYLER_THEME_PATH_WHEN_DARK_MODE_IS_ENABLED = "C:\Program Files\Notepad++\theme
 
 if ($enableDarkMode -ne $null) {
     Wait-Process $NOTEPAD_PLUS_PLUS_PROCESS_NAME -ErrorAction SilentlyContinue
-    $notepadPlusPlusConfigXml = [XML]::new()
+    $notepadPlusPlusConfigXml = [System.Xml.XmlDocument]::new()
     $notepadPlusPlusConfigXml.Load($NOTEPAD_PLUS_PLUS_CONFIG_FILE_PATH)
     $guiConfigDarkModeXmlNode = $notepadPlusPlusConfigXml.SelectNodes($GUI_CONFIG_DARK_MODE_XML_NODE_XPATH)
     $guiConfigStylerThemeXmlNode = $notepadPlusPlusConfigXml.SelectNodes($GUI_CONFIG_STYLER_THEME_XML_NODE_XPATH)

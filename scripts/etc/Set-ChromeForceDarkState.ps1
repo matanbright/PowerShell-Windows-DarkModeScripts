@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param (
-    [Nullable[bool]] $enableForceDark
+    [System.Nullable[bool]] $enableForceDark
 )
 
 

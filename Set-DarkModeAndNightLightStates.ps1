@@ -1,15 +1,15 @@
 ﻿[CmdletBinding()]
 param (
-    [Nullable[DateTime]] $darkModeStartTime,
-    [Nullable[DateTime]] $darkModeEndTime,
-    [Nullable[DateTime]] $nightLightStartTime,
-    [Nullable[DateTime]] $nightLightEndTime
+    [System.Nullable[System.DateTime]] $darkModeStartTime,
+    [System.Nullable[System.DateTime]] $darkModeEndTime,
+    [System.Nullable[System.DateTime]] $nightLightStartTime,
+    [System.Nullable[System.DateTime]] $nightLightEndTime
 )
 
 
 function Get-IfShouldEnableDarkMode {
     param (
-        [DateTime] $timeToCheckAgainst
+        [System.DateTime] $timeToCheckAgainst
     )
     if (($darkModeStartTime -ne $null) -and ($darkModeEndTime -ne $null)) {
         $newDarkModeStartTime = Get-Date -Hour $darkModeStartTime.Hour -Minute $darkModeStartTime.Minute -Second $darkModeStartTime.Second
@@ -25,7 +25,7 @@ function Get-IfShouldEnableDarkMode {
 
 function Get-IfShouldEnableNightLight {
     param (
-        [DateTime] $timeToCheckAgainst
+        [System.DateTime] $timeToCheckAgainst
     )
     if (($nightLightStartTime -ne $null) -and ($nightLightEndTime -ne $null)) {
         $newNightLightStartTime = Get-Date -Hour $nightLightStartTime.Hour -Minute $nightLightStartTime.Minute -Second $nightLightStartTime.Second
@@ -41,10 +41,10 @@ function Get-IfShouldEnableNightLight {
 
 function Start-JobHere() {
     param (
-        [scriptblock] $scriptBlock,
-        [object[]] $arguments
+        [System.Management.Automation.ScriptBlock] $scriptBlock,
+        [System.Object[]] $arguments
     )
-    return Start-Job -Init ([scriptblock]::Create("Set-Location `"$pwd`"")) -ScriptBlock $scriptBlock -ArgumentList $arguments
+    return Start-Job -Init ([System.Management.Automation.ScriptBlock]::Create("Set-Location `"$pwd`"")) -ScriptBlock $scriptBlock -ArgumentList $arguments
 }
 
 

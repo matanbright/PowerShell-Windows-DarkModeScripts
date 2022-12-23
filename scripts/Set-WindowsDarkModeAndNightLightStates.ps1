@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param (
-    [Nullable[bool]] $enableDarkMode,
-    [Nullable[bool]] $enableNightLight
+    [System.Nullable[bool]] $enableDarkMode,
+    [System.Nullable[bool]] $enableNightLight
 )
 
 
@@ -15,7 +15,7 @@ $USER32 = Add-Type -MemberDefinition "
     " -Name "USER32" -PassThru
 $USER32_SPI_SETDESKWALLPAPER = 0x14
 $USER32_SPIF_UPDATEINIFILE = 0x1
-$USER32_HWND_BROADCAST = [IntPtr]0xFFFF
+$USER32_HWND_BROADCAST = [System.IntPtr]0xFFFF
 $USER32_SW_SHOWMINIMIZED = 2
 $USER32_WM_CLOSE = 0x10
 $USER32_WM_SETTINGCHANGE = 0x1A
@@ -39,7 +39,7 @@ function Set-DarkModeState {
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 1
     }
     Start-Sleep -Milliseconds 250
-    $USER32::SendNotifyMessageW($USER32_HWND_BROADCAST, $USER32_WM_SETTINGCHANGE, [UIntPtr][uint32]0, "ImmersiveColorSet") | Out-Null
+    $USER32::SendNotifyMessageW($USER32_HWND_BROADCAST, $USER32_WM_SETTINGCHANGE, [System.UIntPtr][uint32]0, "ImmersiveColorSet") | Out-Null
 }
 
 function Set-WallPaper {
@@ -74,9 +74,9 @@ function Set-NightLightState {
     }
     $temp = [Int64]0x0
     for ($i = 0; $i -lt 4; $i++) {
-        $temp = ($temp -bor ([Int64]($newData[10 + $i] -band 0x7F) -shl (7 * $i)))
+        $temp = ($temp -bor ([int64]($newData[10 + $i] -band 0x7F) -shl (7 * $i)))
     }
-    $temp = ($temp -bor ([Int64]($newData[14] -band 0xF) -shl 28))
+    $temp = ($temp -bor ([int64]($newData[14] -band 0xF) -shl 28))
     $temp++
     for ($i = 0; $i -lt 4; $i++) {
         $newData[10 + $i] = [byte]((($temp -shr (7 * $i)) -band 0x7F) -bor 0x80)
@@ -114,9 +114,9 @@ function Get-SystemSettingsAppWindowHandle {
             }
         }
         if ($applicationFrameHostProcessIdOfCurrentUser -gt 0) {
-            $currentWindowHandle = [IntPtr]::Zero
+            $currentWindowHandle = [System.IntPtr]::Zero
             do {
-                $currentWindowHandle = $USER32::FindWindowExW([IntPtr]::Zero, $currentWindowHandle, [IntPtr]::Zero, [IntPtr]::Zero)
+                $currentWindowHandle = $USER32::FindWindowExW([System.IntPtr]::Zero, $currentWindowHandle, [System.IntPtr]::Zero, [System.IntPtr]::Zero)
                 $currentWindowProcessId = 0
                 $USER32::GetWindowThreadProcessId($currentWindowHandle, [ref] $currentWindowProcessId) | Out-Null
                 if ($currentWindowProcessId -eq $applicationFrameHostProcessIdOfCurrentUser) {
@@ -126,23 +126,23 @@ function Get-SystemSettingsAppWindowHandle {
                         return $currentWindowHandle
                     }
                 }
-            } while ($currentWindowHandle -ne [IntPtr]::Zero)
+            } while ($currentWindowHandle -ne [System.IntPtr]::Zero)
         }
     }
-    return [IntPtr]::Zero
+    return [System.IntPtr]::Zero
 }
 
 function Hide-SystemSettingsAppWindow {
     $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
-    if ($systemSettingsAppWindowHandle -ne [IntPtr]::Zero) {
+    if ($systemSettingsAppWindowHandle -ne [System.IntPtr]::Zero) {
         $USER32::ShowWindow($systemSettingsAppWindowHandle, $USER32_SW_SHOWMINIMIZED) | Out-Null
     }
 }
 
 function Close-SystemSettingsAppWindow {
     $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
-    if ($systemSettingsAppWindowHandle -ne [IntPtr]::Zero) {
-        $USER32::SendNotifyMessageW($systemSettingsAppWindowHandle, $USER32_WM_CLOSE, [UIntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+    if ($systemSettingsAppWindowHandle -ne [System.IntPtr]::Zero) {
+        $USER32::SendNotifyMessageW($systemSettingsAppWindowHandle, $USER32_WM_CLOSE, [System.UIntPtr]::Zero, [System.IntPtr]::Zero) | Out-Null
     }
 }
 
