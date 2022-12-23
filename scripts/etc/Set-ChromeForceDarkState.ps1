@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param (
-    [System.Nullable[bool]] $enableForceDark
+    [System.Nullable[bool]] $EnableForceDark
 )
 
 
@@ -9,7 +9,7 @@ $CHROME_LOCAL_STATE_FILE_PATH = "$env:LOCALAPPDATA\Google\Chrome\User Data\Local
 $FORCE_DARK_ENABLE_FLAG_STRING = "enable-force-dark@1"
 
 
-if ($enableForceDark -ne $null) {
+if ($EnableForceDark -ne $null) {
     Wait-Process $CHROME_PROCESS_NAME -ErrorAction SilentlyContinue
     $chromeLocalStateJson = Get-Content $CHROME_LOCAL_STATE_FILE_PATH -raw | ConvertFrom-Json
     $chromeLocalStateJson.browser | Add-Member -MemberType NoteProperty -Name "enabled_labs_experiments" -Value @() -ErrorAction SilentlyContinue

@@ -1,23 +1,23 @@
 ﻿[CmdletBinding()]
 param (
-    [System.Nullable[System.DateTime]] $darkModeStartTime,
-    [System.Nullable[System.DateTime]] $darkModeEndTime,
-    [System.Nullable[System.DateTime]] $nightLightStartTime,
-    [System.Nullable[System.DateTime]] $nightLightEndTime
+    [System.Nullable[System.DateTime]] $DarkModeStartTime,
+    [System.Nullable[System.DateTime]] $DarkModeEndTime,
+    [System.Nullable[System.DateTime]] $NightLightStartTime,
+    [System.Nullable[System.DateTime]] $NightLightEndTime
 )
 
 
 function Get-IfShouldEnableDarkMode {
     param (
-        [System.DateTime] $timeToCheckAgainst
+        [System.DateTime] $TimeToCheckAgainst
     )
-    if (($darkModeStartTime -ne $null) -and ($darkModeEndTime -ne $null)) {
-        $newDarkModeStartTime = Get-Date -Hour $darkModeStartTime.Hour -Minute $darkModeStartTime.Minute -Second $darkModeStartTime.Second
-        $newDarkModeEndTime = Get-Date -Hour $darkModeEndTime.Hour -Minute $darkModeEndTime.Minute -Second $darkModeEndTime.Second
-        if ($darkModeStartTime -le $darkModeEndTime) {
-            return (($timeToCheckAgainst -ge $newDarkModeStartTime) -and ($timeToCheckAgainst -lt $newDarkModeEndTime))
+    if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
+        $newDarkModeStartTime = Get-Date -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second
+        $newDarkModeEndTime = Get-Date -Hour $DarkModeEndTime.Hour -Minute $DarkModeEndTime.Minute -Second $DarkModeEndTime.Second
+        if ($DarkModeStartTime -le $DarkModeEndTime) {
+            return (($TimeToCheckAgainst -ge $newDarkModeStartTime) -and ($TimeToCheckAgainst -lt $newDarkModeEndTime))
         } else {
-            return (($timeToCheckAgainst -ge $newDarkModeStartTime) -or ($timeToCheckAgainst -lt $newDarkModeEndTime))
+            return (($TimeToCheckAgainst -ge $newDarkModeStartTime) -or ($TimeToCheckAgainst -lt $newDarkModeEndTime))
         }
     }
     return $null
@@ -25,15 +25,15 @@ function Get-IfShouldEnableDarkMode {
 
 function Get-IfShouldEnableNightLight {
     param (
-        [System.DateTime] $timeToCheckAgainst
+        [System.DateTime] $TimeToCheckAgainst
     )
-    if (($nightLightStartTime -ne $null) -and ($nightLightEndTime -ne $null)) {
-        $newNightLightStartTime = Get-Date -Hour $nightLightStartTime.Hour -Minute $nightLightStartTime.Minute -Second $nightLightStartTime.Second
-        $newNightLightEndTime = Get-Date -Hour $nightLightEndTime.Hour -Minute $nightLightEndTime.Minute -Second $nightLightEndTime.Second
-        if ($nightLightStartTime -le $nightLightEndTime) {
-            return (($timeToCheckAgainst -ge $newNightLightStartTime) -and ($timeToCheckAgainst -lt $newNightLightEndTime))
+    if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
+        $newNightLightStartTime = Get-Date -Hour $NightLightStartTime.Hour -Minute $NightLightStartTime.Minute -Second $NightLightStartTime.Second
+        $newNightLightEndTime = Get-Date -Hour $NightLightEndTime.Hour -Minute $NightLightEndTime.Minute -Second $NightLightEndTime.Second
+        if ($NightLightStartTime -le $NightLightEndTime) {
+            return (($TimeToCheckAgainst -ge $newNightLightStartTime) -and ($TimeToCheckAgainst -lt $newNightLightEndTime))
         } else {
-            return (($timeToCheckAgainst -ge $newNightLightStartTime) -or ($timeToCheckAgainst -lt $newNightLightEndTime))
+            return (($TimeToCheckAgainst -ge $newNightLightStartTime) -or ($TimeToCheckAgainst -lt $newNightLightEndTime))
         }
     }
     return $null
@@ -41,10 +41,10 @@ function Get-IfShouldEnableNightLight {
 
 function Start-JobHere() {
     param (
-        [System.Management.Automation.ScriptBlock] $scriptBlock,
-        [System.Object[]] $arguments
+        [System.Management.Automation.ScriptBlock] $ScriptBlock,
+        [System.Object[]] $Arguments
     )
-    return Start-Job -Init ([System.Management.Automation.ScriptBlock]::Create("Set-Location `"$pwd`"")) -ScriptBlock $scriptBlock -ArgumentList $arguments
+    return Start-Job -Init ([System.Management.Automation.ScriptBlock]::Create("Set-Location `"$pwd`"")) -ScriptBlock $ScriptBlock -ArgumentList $Arguments
 }
 
 

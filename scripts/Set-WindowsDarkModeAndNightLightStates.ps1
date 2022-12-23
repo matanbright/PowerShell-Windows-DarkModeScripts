@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param (
-    [System.Nullable[bool]] $enableDarkMode,
-    [System.Nullable[bool]] $enableNightLight
+    [System.Nullable[bool]] $EnableDarkMode,
+    [System.Nullable[bool]] $EnableNightLight
 )
 
 
@@ -30,9 +30,9 @@ $WINDOW_CAPTION_MAX_CHARACTER_COUNT = 1000
 
 function Set-DarkModeState {
     param (
-        [Parameter(Mandatory=$true)] [bool] $enabled
+        [Parameter(Mandatory=$true)] [bool] $Enabled
     )
-    if ($enabled) {
+    if ($Enabled) {
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
     } else {
@@ -45,27 +45,27 @@ function Set-DarkModeState {
 
 function Set-WallPaper {
     param (
-        [Parameter(Mandatory=$true)] [string] $imagePath
+        [Parameter(Mandatory=$true)] [string] $ImagePath
     )
-    $USER32::SystemParametersInfoW($USER32_SPI_SETDESKWALLPAPER, 0, $imagePath, $USER32_SPIF_UPDATEINIFILE) | Out-Null
+    $USER32::SystemParametersInfoW($USER32_SPI_SETDESKWALLPAPER, 0, $ImagePath, $USER32_SPIF_UPDATEINIFILE) | Out-Null
 }
 
 function Set-NightLightState {
     param (
-        [Parameter(Mandatory=$true)] [bool] $enabled
+        [Parameter(Mandatory=$true)] [bool] $Enabled
     )
     $currentData = (Get-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.bluelightreduction.bluelightreductionstate\windows.data.bluelightreduction.bluelightreductionstate' -Name 'Data').Data
     $newData = @()
     for ($i = 0; $i -lt 23; $i++) {
         $newData += $currentData[$i]
     }
-    if (($currentData.Length -eq 41) -and ($currentData[18] -eq 0x13) -and $enabled) {
+    if (($currentData.Length -eq 41) -and ($currentData[18] -eq 0x13) -and $Enabled) {
         $newData[18] = 0x15
         $newData += (0x10, 0x00)
         for ($i = 23; $i -lt $currentData.Length; $i++) {
             $newData += $currentData[$i]
         }
-    } elseif (($currentData.Length -eq 43) -and ($currentData[18] -eq 0x15) -and (-not $enabled)) {
+    } elseif (($currentData.Length -eq 43) -and ($currentData[18] -eq 0x15) -and (-not $Enabled)) {
         $newData[18] = 0x13
         for ($i = 25; $i -lt $currentData.Length; $i++) {
             $newData += $currentData[$i]
@@ -148,17 +148,17 @@ function Close-SystemSettingsAppWindow {
 }
 
 
-if ($enableDarkMode -ne $null) {
+if ($EnableDarkMode -ne $null) {
     $systemSettingsAppWasNotAlreadyOpen = Open-SystemSettingsApp
     if ($systemSettingsAppWasNotAlreadyOpen) {
         Hide-SystemSettingsAppWindow
     }
-    Set-DarkModeState $enableDarkMode
+    Set-DarkModeState $EnableDarkMode
     if ($systemSettingsAppWasNotAlreadyOpen) {
         Close-SystemSettingsAppWindow
     }
-    Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$enableDarkMode]
+    Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$EnableDarkMode]
 }
-if ($enableNightLight -ne $null) {
-    Set-NightLightState $enableNightLight
+if ($EnableNightLight -ne $null) {
+    Set-NightLightState $EnableNightLight
 }
