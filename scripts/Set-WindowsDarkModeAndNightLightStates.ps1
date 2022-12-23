@@ -26,6 +26,7 @@ $IMMERSIVE_CONTROL_PANEL_APP_TITLES = ("Settings", "הגדרות")    # If your 
 $APPLICATION_FRAME_HOST_PROCESS_NAME = "ApplicationFrameHost"
 $LIGHT_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img0.jpg"
 $DARK_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img19.jpg"
+$WINDOW_CAPTION_MAX_CHARACTER_COUNT = 1000
 
 function Set-DarkModeState {
     param (
@@ -120,8 +121,8 @@ function Get-SystemSettingsAppWindowHandle {
                 $currentWindowProcessId = 0
                 $USER32::GetWindowThreadProcessId($currentWindowHandle, [ref] $currentWindowProcessId) | Out-Null
                 if ($currentWindowProcessId -eq $applicationFrameHostProcessIdOfCurrentUser) {
-                    $currentWindowCaption = [System.Text.StringBuilder]::new(1000)
-                    $USER32::GetWindowTextW($currentWindowHandle, $currentWindowCaption, 1000) | Out-Null
+                    $currentWindowCaption = [System.Text.StringBuilder]::new($WINDOW_CAPTION_MAX_CHARACTER_COUNT)
+                    $USER32::GetWindowTextW($currentWindowHandle, $currentWindowCaption, $WINDOW_CAPTION_MAX_CHARACTER_COUNT) | Out-Null
                     if ($IMMERSIVE_CONTROL_PANEL_APP_TITLES -contains $currentWindowCaption.ToString()) {
                         return $currentWindowHandle
                     }
