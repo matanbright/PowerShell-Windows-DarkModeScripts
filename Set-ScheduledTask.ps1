@@ -106,3 +106,4 @@ $scheduledTaskXmlRepresentation | Out-File $newTemporaryFilePath
 schtasks /Delete /TN $scheduledTaskName /F 2>&1 | Out-Null
 schtasks /Create /TN $scheduledTaskName /XML $newTemporaryFilePath
 Remove-Item $newTemporaryFilePath
+Start-ScheduledTask $scheduledTaskName
