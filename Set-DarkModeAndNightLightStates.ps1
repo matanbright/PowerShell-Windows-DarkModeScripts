@@ -12,8 +12,8 @@ function Get-IfShouldEnableDarkMode {
         [System.DateTime] $TimeToCheckAgainst
     )
     if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
-        $newDarkModeStartTime = Get-Date -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second
-        $newDarkModeEndTime = Get-Date -Hour $DarkModeEndTime.Hour -Minute $DarkModeEndTime.Minute -Second $DarkModeEndTime.Second
+        $newDarkModeStartTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second
+        $newDarkModeEndTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeEndTime.Hour -Minute $DarkModeEndTime.Minute -Second $DarkModeEndTime.Second
         if ($DarkModeStartTime -le $DarkModeEndTime) {
             return (($TimeToCheckAgainst -ge $newDarkModeStartTime) -and ($TimeToCheckAgainst -lt $newDarkModeEndTime))
         } else {
@@ -28,8 +28,8 @@ function Get-IfShouldEnableNightLight {
         [System.DateTime] $TimeToCheckAgainst
     )
     if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
-        $newNightLightStartTime = Get-Date -Hour $NightLightStartTime.Hour -Minute $NightLightStartTime.Minute -Second $NightLightStartTime.Second
-        $newNightLightEndTime = Get-Date -Hour $NightLightEndTime.Hour -Minute $NightLightEndTime.Minute -Second $NightLightEndTime.Second
+        $newNightLightStartTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightStartTime.Hour -Minute $NightLightStartTime.Minute -Second $NightLightStartTime.Second
+        $newNightLightEndTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightEndTime.Hour -Minute $NightLightEndTime.Minute -Second $NightLightEndTime.Second
         if ($NightLightStartTime -le $NightLightEndTime) {
             return (($TimeToCheckAgainst -ge $newNightLightStartTime) -and ($TimeToCheckAgainst -lt $newNightLightEndTime))
         } else {
@@ -48,7 +48,7 @@ function Start-JobHere() {
 }
 
 
-$currentTime = Get-Date
+$currentTime = Get-Date -Day 1 -Month 1 -Year 1970
 $shouldEnableDarkMode = Get-IfShouldEnableDarkMode $currentTime
 $shouldEnableNightLight = Get-IfShouldEnableNightLight $currentTime
 $jobList = @()
