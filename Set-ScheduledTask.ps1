@@ -22,27 +22,27 @@ if (($DarkModeStartTime -eq $null) -and ($DarkModeEndTime -eq $null) -and ($Nigh
 $scheduledTaskTimes = @()
 $scheduledTaskCommand = "`"" + $pwd.Path + "\" + $SILENT_RUNNER_EXECUTABLE_NAME + "`""
 $scheduledTaskArguments = "powershell `".\$SCHEDULED_SCRIPT_NAME"
-if ($DarkModeStartTime -ne $null) {
+if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
     $scheduledTaskTimes += $DarkModeStartTime
     $scheduledTaskArguments += " -DarkModeStartTime $($DarkModeStartTime.ToString("HH:mm"))"
-}
-if ($DarkModeEndTime -ne $null) {
     if ($scheduledTaskTimes -notcontains $DarkModeEndTime) {
         $scheduledTaskTimes += $DarkModeEndTime
     }
     $scheduledTaskArguments += " -DarkModeEndTime $($DarkModeEndTime.ToString("HH:mm"))"
+} elseif (($DarkModeStartTime -ne $null) -xor ($DarkModeEndTime -ne $null)) {
+    Write-Host "Warning: Dark mode's time was ignored because a start/end time was not specified!"
 }
-if ($NightLightStartTime -ne $null) {
+if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
     if ($scheduledTaskTimes -notcontains $NightLightStartTime) {
         $scheduledTaskTimes += $NightLightStartTime
     }
     $scheduledTaskArguments += " -NightLightStartTime $($NightLightStartTime.ToString("HH:mm"))"
-}
-if ($NightLightEndTime -ne $null) {
     if ($scheduledTaskTimes -notcontains $NightLightEndTime) {
         $scheduledTaskTimes += $NightLightEndTime
     }
     $scheduledTaskArguments += " -NightLightEndTime $($NightLightEndTime.ToString("HH:mm"))"
+} elseif (($NightLightStartTime -ne $null) -xor ($NightLightEndTime -ne $null)) {
+    Write-Host "Warning: Night light's time was ignored because a start/end time was not specified!"
 }
 $scheduledTaskArguments += "`""
 $scheduledTaskXmlRepresentation = "
