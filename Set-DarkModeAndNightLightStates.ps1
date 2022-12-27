@@ -7,17 +7,21 @@ param (
 )
 
 
+$ACCEPTABLE_TIME_DEVIATION_IN_MILLISECONDS = 1000
+
+
 function Get-IfShouldEnableDarkMode {
     param (
         [System.DateTime] $TimeToCheckAgainst
     )
+    $newTimeToCheckAgainst = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $TimeToCheckAgainst.Hour -Minute $TimeToCheckAgainst.Minute -Second $TimeToCheckAgainst.Second).AddMilliseconds($ACCEPTABLE_TIME_DEVIATION_IN_MILLISECONDS)
     if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
         $newDarkModeStartTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second
         $newDarkModeEndTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeEndTime.Hour -Minute $DarkModeEndTime.Minute -Second $DarkModeEndTime.Second
         if ($DarkModeStartTime -le $DarkModeEndTime) {
-            return (($TimeToCheckAgainst -ge $newDarkModeStartTime) -and ($TimeToCheckAgainst -lt $newDarkModeEndTime))
+            return (($newTimeToCheckAgainst -ge $newDarkModeStartTime) -and ($newTimeToCheckAgainst -lt $newDarkModeEndTime))
         } else {
-            return (($TimeToCheckAgainst -ge $newDarkModeStartTime) -or ($TimeToCheckAgainst -lt $newDarkModeEndTime))
+            return (($newTimeToCheckAgainst -ge $newDarkModeStartTime) -or ($newTimeToCheckAgainst -lt $newDarkModeEndTime))
         }
     }
     return $null
@@ -27,13 +31,14 @@ function Get-IfShouldEnableNightLight {
     param (
         [System.DateTime] $TimeToCheckAgainst
     )
+    $newTimeToCheckAgainst = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $TimeToCheckAgainst.Hour -Minute $TimeToCheckAgainst.Minute -Second $TimeToCheckAgainst.Second).AddMilliseconds($ACCEPTABLE_TIME_DEVIATION_IN_MILLISECONDS)
     if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
         $newNightLightStartTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightStartTime.Hour -Minute $NightLightStartTime.Minute -Second $NightLightStartTime.Second
         $newNightLightEndTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightEndTime.Hour -Minute $NightLightEndTime.Minute -Second $NightLightEndTime.Second
         if ($NightLightStartTime -le $NightLightEndTime) {
-            return (($TimeToCheckAgainst -ge $newNightLightStartTime) -and ($TimeToCheckAgainst -lt $newNightLightEndTime))
+            return (($newTimeToCheckAgainst -ge $newNightLightStartTime) -and ($newTimeToCheckAgainst -lt $newNightLightEndTime))
         } else {
-            return (($TimeToCheckAgainst -ge $newNightLightStartTime) -or ($TimeToCheckAgainst -lt $newNightLightEndTime))
+            return (($newTimeToCheckAgainst -ge $newNightLightStartTime) -or ($newTimeToCheckAgainst -lt $newNightLightEndTime))
         }
     }
     return $null
@@ -48,7 +53,7 @@ function Start-JobHere() {
 }
 
 
-$currentTime = Get-Date -Day 1 -Month 1 -Year 1970
+$currentTime = Get-Date
 $shouldEnableDarkMode = Get-IfShouldEnableDarkMode $currentTime
 $shouldEnableNightLight = Get-IfShouldEnableNightLight $currentTime
 $jobList = @()
