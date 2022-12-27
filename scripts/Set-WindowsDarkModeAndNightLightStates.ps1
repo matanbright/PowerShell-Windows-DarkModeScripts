@@ -27,6 +27,7 @@ $APPLICATION_FRAME_HOST_PROCESS_NAME = "ApplicationFrameHost"
 $LIGHT_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img0.jpg"
 $DARK_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img19.jpg"
 $WINDOW_CAPTION_MAX_CHARACTER_COUNT = 1000
+$SYSTEM_SETTINGS_APP_WINDOW_OPENING_WAITING_TIMEOUT_IN_MILLISECONDS = 1000
 
 function Set-DarkModeState {
     param (
@@ -97,7 +98,6 @@ function Open-SystemSettingsApp {
     }
     if (!(Get-Process $IMMERSIVE_CONTROL_PANEL_APP_NATIVE_PROCESS_NAME -ErrorAction SilentlyContinue)) {
         Start-Process $immersiveControlPanelAppPath
-        Start-Sleep -Milliseconds 100
         return $true
     }
     return $false
@@ -105,7 +105,7 @@ function Open-SystemSettingsApp {
 
 function Get-SystemSettingsAppWindowHandle {
     $applicationFrameHostProcesses = [System.Diagnostics.Process]::GetProcessesByName($APPLICATION_FRAME_HOST_PROCESS_NAME)
-    if ($applicationFrameHostProcesses) {
+    if ($applicationFrameHostProcesses.Length -gt 0) {
         $applicationFrameHostProcessIdOfCurrentUser = 0
         $sessionIdOfCurrentUser = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
         foreach ($applicationFrameHostProcess in $applicationFrameHostProcesses) {
@@ -133,17 +133,35 @@ function Get-SystemSettingsAppWindowHandle {
     return [System.IntPtr]::Zero
 }
 
-function Hide-SystemSettingsAppWindow {
-    $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
-    if ($systemSettingsAppWindowHandle -ne [System.IntPtr]::Zero) {
-        $USER32::ShowWindow($systemSettingsAppWindowHandle, $USER32_SW_SHOWMINIMIZED) | Out-Null
+function Wait-ForSystemSettingsAppWindowToBeOpenedAndGetWindowHandle {
+    param (
+        [System.Nullable[int]] $TimeoutInMilliseconds
+    )
+    $systemSettingsAppWindowHandle = [System.IntPtr]::Zero
+    $startTime = Get-Date
+    do {
+        $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
+        Start-Sleep -Milliseconds 100
+    } while (($systemSettingsAppWindowHandle -eq [System.IntPtr]::Zero) -and `
+                (($TimeoutInMilliseconds -eq $null) -or (((Get-Date) - $startTime).TotalMilliseconds -lt $TimeoutInMilliseconds)))
+    return $systemSettingsAppWindowHandle
+}
+
+function Hide-Window {
+    param (
+        [System.IntPtr] $WindowHandle
+    )
+    if ($WindowHandle -ne [System.IntPtr]::Zero) {
+        $USER32::ShowWindow($WindowHandle, $USER32_SW_SHOWMINIMIZED) | Out-Null
     }
 }
 
-function Close-SystemSettingsAppWindow {
-    $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
-    if ($systemSettingsAppWindowHandle -ne [System.IntPtr]::Zero) {
-        $USER32::SendNotifyMessageW($systemSettingsAppWindowHandle, $USER32_WM_CLOSE, [System.UIntPtr]::Zero, [System.IntPtr]::Zero) | Out-Null
+function Close-Window {
+    param (
+        [System.IntPtr] $WindowHandle
+    )
+    if ($WindowHandle -ne [System.IntPtr]::Zero) {
+        $USER32::SendNotifyMessageW($WindowHandle, $USER32_WM_CLOSE, [System.UIntPtr]::Zero, [System.IntPtr]::Zero) | Out-Null
     }
 }
 
@@ -151,11 +169,12 @@ function Close-SystemSettingsAppWindow {
 if ($EnableDarkMode -ne $null) {
     $systemSettingsAppWasNotAlreadyOpen = Open-SystemSettingsApp
     if ($systemSettingsAppWasNotAlreadyOpen) {
-        Hide-SystemSettingsAppWindow
-    }
-    Set-DarkModeState $EnableDarkMode
-    if ($systemSettingsAppWasNotAlreadyOpen) {
-        Close-SystemSettingsAppWindow
+        $systemSettingsAppWindowHandle = Wait-ForSystemSettingsAppWindowToBeOpenedAndGetWindowHandle $SYSTEM_SETTINGS_APP_WINDOW_OPENING_WAITING_TIMEOUT_IN_MILLISECONDS
+        Hide-Window $systemSettingsAppWindowHandle
+        Set-DarkModeState $EnableDarkMode
+        Close-Window $systemSettingsAppWindowHandle
+    } else {
+        Set-DarkModeState $EnableDarkMode
     }
     Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$EnableDarkMode]
 }
