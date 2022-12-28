@@ -70,7 +70,7 @@ $scheduledTaskXmlRepresentation = "
             <Hidden>false</Hidden>
             <RunOnlyIfIdle>false</RunOnlyIfIdle>
             <WakeToRun>false</WakeToRun>
-            <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
+            <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
             <Priority>7</Priority>
             <RestartOnFailure>
                 <Interval>PT1M</Interval>
