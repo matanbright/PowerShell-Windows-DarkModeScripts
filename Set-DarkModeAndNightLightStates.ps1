@@ -15,7 +15,7 @@ function Get-IfShouldEnableDarkMode {
         [System.DateTime] $TimeToCheckAgainst
     )
     $newTimeToCheckAgainst = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $TimeToCheckAgainst.Hour -Minute $TimeToCheckAgainst.Minute -Second $TimeToCheckAgainst.Second).AddMilliseconds($ACCEPTABLE_TIME_DEVIATION_IN_MILLISECONDS)
-    if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
+    if (($null -ne $DarkModeStartTime) -and ($null -ne $DarkModeEndTime)) {
         $newDarkModeStartTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeStartTime.Hour -Minute $DarkModeStartTime.Minute -Second $DarkModeStartTime.Second
         $newDarkModeEndTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $DarkModeEndTime.Hour -Minute $DarkModeEndTime.Minute -Second $DarkModeEndTime.Second
         if ($DarkModeStartTime -le $DarkModeEndTime) {
@@ -32,7 +32,7 @@ function Get-IfShouldEnableNightLight {
         [System.DateTime] $TimeToCheckAgainst
     )
     $newTimeToCheckAgainst = (Get-Date -Day 1 -Month 1 -Year 1970 -Hour $TimeToCheckAgainst.Hour -Minute $TimeToCheckAgainst.Minute -Second $TimeToCheckAgainst.Second).AddMilliseconds($ACCEPTABLE_TIME_DEVIATION_IN_MILLISECONDS)
-    if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
+    if (($null -ne $NightLightStartTime) -and ($null -ne $NightLightEndTime)) {
         $newNightLightStartTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightStartTime.Hour -Minute $NightLightStartTime.Minute -Second $NightLightStartTime.Second
         $newNightLightEndTime = Get-Date -Day 1 -Month 1 -Year 1970 -Hour $NightLightEndTime.Hour -Minute $NightLightEndTime.Minute -Second $NightLightEndTime.Second
         if ($NightLightStartTime -le $NightLightEndTime) {

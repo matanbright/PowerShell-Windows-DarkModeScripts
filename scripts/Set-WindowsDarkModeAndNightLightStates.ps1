@@ -143,7 +143,7 @@ function Wait-ForSystemSettingsAppWindowToBeOpenedAndGetWindowHandle {
         $systemSettingsAppWindowHandle = Get-SystemSettingsAppWindowHandle
         Start-Sleep -Milliseconds 100
     } while (($systemSettingsAppWindowHandle -eq [System.IntPtr]::Zero) -and `
-                (($TimeoutInMilliseconds -eq $null) -or (((Get-Date) - $startTime).TotalMilliseconds -lt $TimeoutInMilliseconds)))
+                (($null -eq $TimeoutInMilliseconds) -or (((Get-Date) - $startTime).TotalMilliseconds -lt $TimeoutInMilliseconds)))
     return $systemSettingsAppWindowHandle
 }
 
@@ -166,7 +166,7 @@ function Close-Window {
 }
 
 
-if ($EnableDarkMode -ne $null) {
+if ($null -ne $EnableDarkMode) {
     $systemSettingsAppWasNotAlreadyOpen = Open-SystemSettingsApp
     if ($systemSettingsAppWasNotAlreadyOpen) {
         $systemSettingsAppWindowHandle = Wait-ForSystemSettingsAppWindowToBeOpenedAndGetWindowHandle $SYSTEM_SETTINGS_APP_WINDOW_OPENING_WAITING_TIMEOUT_IN_MILLISECONDS
@@ -178,6 +178,6 @@ if ($EnableDarkMode -ne $null) {
     }
     Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$EnableDarkMode]
 }
-if ($EnableNightLight -ne $null) {
+if ($null -ne $EnableNightLight) {
     Set-NightLightState $EnableNightLight
 }

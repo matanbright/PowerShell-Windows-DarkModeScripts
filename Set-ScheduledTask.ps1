@@ -12,7 +12,7 @@ $SCHEDULED_SCRIPT_NAME = "Set-DarkModeAndNightLightStates.ps1"
 
 
 $scheduledTaskName = "SetDarkModeAndNightLightStates ($([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value))"
-if (($DarkModeStartTime -eq $null) -and ($DarkModeEndTime -eq $null) -and ($NightLightStartTime -eq $null) -and ($NightLightEndTime -eq $null)) {
+if (($null -eq $DarkModeStartTime) -and ($null -eq $DarkModeEndTime) -and ($null -eq $NightLightStartTime) -and ($null -eq $NightLightEndTime)) {
     Write-Host -NoNewline "No arguments were provided, so, would you want to remove the scheduled task? [Y/N]: "
     if ((Read-Host) -eq "Y") {
         schtasks /Delete /TN $scheduledTaskName /F
@@ -22,17 +22,17 @@ if (($DarkModeStartTime -eq $null) -and ($DarkModeEndTime -eq $null) -and ($Nigh
 $scheduledTaskTimes = @()
 $scheduledTaskCommand = "`"" + $pwd.Path + "\" + $SILENT_RUNNER_EXECUTABLE_NAME + "`""
 $scheduledTaskArguments = "powershell `".\$SCHEDULED_SCRIPT_NAME"
-if (($DarkModeStartTime -ne $null) -and ($DarkModeEndTime -ne $null)) {
+if (($null -ne $DarkModeStartTime) -and ($null -ne $DarkModeEndTime)) {
     $scheduledTaskTimes += $DarkModeStartTime
     $scheduledTaskArguments += " -DarkModeStartTime $($DarkModeStartTime.ToString("HH:mm"))"
     if ($scheduledTaskTimes -notcontains $DarkModeEndTime) {
         $scheduledTaskTimes += $DarkModeEndTime
     }
     $scheduledTaskArguments += " -DarkModeEndTime $($DarkModeEndTime.ToString("HH:mm"))"
-} elseif (($DarkModeStartTime -ne $null) -xor ($DarkModeEndTime -ne $null)) {
+} elseif (($null -ne $DarkModeStartTime) -xor ($null -ne $DarkModeEndTime)) {
     Write-Host "Warning: Dark mode's time was ignored because a start/end time was not specified!"
 }
-if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
+if (($null -ne $NightLightStartTime) -and ($null -ne $NightLightEndTime)) {
     if ($scheduledTaskTimes -notcontains $NightLightStartTime) {
         $scheduledTaskTimes += $NightLightStartTime
     }
@@ -41,7 +41,7 @@ if (($NightLightStartTime -ne $null) -and ($NightLightEndTime -ne $null)) {
         $scheduledTaskTimes += $NightLightEndTime
     }
     $scheduledTaskArguments += " -NightLightEndTime $($NightLightEndTime.ToString("HH:mm"))"
-} elseif (($NightLightStartTime -ne $null) -xor ($NightLightEndTime -ne $null)) {
+} elseif (($null -ne $NightLightStartTime) -xor ($null -ne $NightLightEndTime)) {
     Write-Host "Warning: Night light's time was ignored because a start/end time was not specified!"
 }
 $scheduledTaskArguments += "`""
