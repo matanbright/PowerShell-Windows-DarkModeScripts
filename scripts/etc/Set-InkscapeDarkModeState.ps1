@@ -7,6 +7,8 @@ param (
 $INKSCAPE_PROCESS_NAME = "inkscape"
 $INKSCAPE_CONFIG_FILE_PATH = "$env:APPDATA\inkscape\preferences.xml"
 $GROUP_THEME_XML_NODE_XPATH = "//group[@id = `"theme`"]"
+$PREFER_DARK_THEME_XML_NODE_ATTRIBUTE = "preferDarkTheme"
+$DARK_THEME_XML_NODE_ATTRIBUTE = "darkTheme"
 
 
 if ($null -ne $EnableDarkMode) {
@@ -16,11 +18,11 @@ if ($null -ne $EnableDarkMode) {
         $inkscapeConfigXml.Load($INKSCAPE_CONFIG_FILE_PATH)
         $groupThemeXmlNode = $inkscapeConfigXml.SelectNodes($GROUP_THEME_XML_NODE_XPATH)
         if ($EnableDarkMode) {
-            $groupThemeXmlNode.SetAttribute("preferDarkTheme", "1")
-            $groupThemeXmlNode.SetAttribute("darkTheme", "1")
+            $groupThemeXmlNode.SetAttribute($PREFER_DARK_THEME_XML_NODE_ATTRIBUTE, "1")
+            $groupThemeXmlNode.SetAttribute($DARK_THEME_XML_NODE_ATTRIBUTE, "1")
         } else {
-            $groupThemeXmlNode.SetAttribute("preferDarkTheme", "0")
-            $groupThemeXmlNode.SetAttribute("darkTheme", "0")
+            $groupThemeXmlNode.SetAttribute($PREFER_DARK_THEME_XML_NODE_ATTRIBUTE, "0")
+            $groupThemeXmlNode.SetAttribute($DARK_THEME_XML_NODE_ATTRIBUTE, "0")
         }
         $inkscapeConfigXml.Save($INKSCAPE_CONFIG_FILE_PATH)
     }
