@@ -82,6 +82,11 @@ $scheduledTaskXmlRepresentation = "
                 <Enabled>true</Enabled>
                 <UserId>$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)</UserId>
             </LogonTrigger>
+            <SessionStateChangeTrigger>
+                <Enabled>true</Enabled>
+                <StateChange>SessionUnlock</StateChange>
+                <UserId>$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)</UserId>
+            </SessionStateChangeTrigger>
             $(foreach ($scheduledTaskTime in $scheduledTaskTimes) {
                 "<CalendarTrigger>
                     <StartBoundary>$($scheduledTaskTime.ToString("s"))</StartBoundary>
