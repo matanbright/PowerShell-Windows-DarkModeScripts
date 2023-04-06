@@ -29,6 +29,12 @@ $DARK_WALLPAPER_IMAGE_PATH = "C:\WINDOWS\web\wallpaper\Windows\img19.jpg"
 $WINDOW_CAPTION_MAX_CHARACTER_COUNT = 1000
 $SYSTEM_SETTINGS_APP_WINDOW_OPENING_WAITING_TIMEOUT_IN_MILLISECONDS = 1000
 
+function Get-DarkModeState {
+    $appsUseLightThemeValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme"
+    $systemUsesLightThemeValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme"
+    return (($appsUseLightThemeValue -eq 0) -and ($systemUsesLightThemeValue -eq 0))
+}
+
 function Set-DarkModeState {
     param (
         [Parameter(Mandatory=$true)] [bool] $Enabled
@@ -167,16 +173,19 @@ function Close-Window {
 
 
 if ($null -ne $EnableDarkMode) {
-    $systemSettingsAppWasNotAlreadyOpen = Open-SystemSettingsApp
-    if ($systemSettingsAppWasNotAlreadyOpen) {
-        $systemSettingsAppWindowHandle = Wait-ForSystemSettingsAppWindowToBeOpenedAndGetWindowHandle $SYSTEM_SETTINGS_APP_WINDOW_OPENING_WAITING_TIMEOUT_IN_MILLISECONDS
-        Hide-Window $systemSettingsAppWindowHandle
-        Set-DarkModeState $EnableDarkMode
-        Close-Window $systemSettingsAppWindowHandle
-    } else {
-        Set-DarkModeState $EnableDarkMode
+    $darkModeIsEnabled = Get-DarkModeState
+    if ($EnableDarkMode -ne $darkModeIsEnabled) {
+        $systemSettingsAppWasNotAlreadyOpen = Open-SystemSettingsApp
+        if ($systemSettingsAppWasNotAlreadyOpen) {
+            $systemSettingsAppWindowHandle = Wait-ForSystemSettingsAppWindowToBeOpenedAndGetWindowHandle $SYSTEM_SETTINGS_APP_WINDOW_OPENING_WAITING_TIMEOUT_IN_MILLISECONDS
+            Hide-Window $systemSettingsAppWindowHandle
+            Set-DarkModeState $EnableDarkMode
+            Close-Window $systemSettingsAppWindowHandle
+        } else {
+            Set-DarkModeState $EnableDarkMode
+        }
+        Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$EnableDarkMode]
     }
-    Set-WallPaper @($LIGHT_WALLPAPER_IMAGE_PATH, $DARK_WALLPAPER_IMAGE_PATH)[$EnableDarkMode]
 }
 if ($null -ne $EnableNightLight) {
     Set-NightLightState $EnableNightLight
